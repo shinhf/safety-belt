@@ -60,7 +60,7 @@ function semanticErrors(o, snapshot) {
   const errors = [];
   if (o.billingKind === 'unknown') errors.push('BILLING_KIND_UNKNOWN');
   if (o.upfrontCents === null || o.currency === null) errors.push('UPFRONT_MISSING');
-  if (o.merchantName !== snapshot.merchant.name) errors.push('MERCHANT_MISMATCH');
+  if (o.merchantName !== snapshot.merchant.name) errors.push('MERCHANT_NAME_MISMATCH');
   if (o.quotations.length === 0) errors.push('NO_QUOTATIONS');
   // shortcut: proves each quote is in the disclosure, not that it supports billingKind; task 8 eval measures implicit one-off wording.
   if (o.quotations.some((q) => !snapshot.disclosure.includes(q))) errors.push('QUOTE_NOT_IN_DISCLOSURE');

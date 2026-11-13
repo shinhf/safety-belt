@@ -7,6 +7,7 @@ import { confirmIntent, intentView } from './domain/intent.js';
 import { interpretCheckout } from './gemini.js';
 import { evaluate } from './domain/policy.js';
 import { submit } from './domain/execution.js';
+import { explain } from './domain/explanation.js';
 
 const PUBLIC = new URL('../public/', import.meta.url);
 // Fixed allowlist: URL paths are never joined onto the filesystem.
@@ -116,8 +117,9 @@ export function startServer({ port = 3000, gemini } = {}) {
         }
         if (path === '/api/decide') {
           // Server-held state only: the request carries no verdict, interpretation or grant.
-          const { decision, grantId } = evaluate(session, currentCheck());
-          return send(res, 200, { decision, grantId });
+          const check = currentCheck();
+          const { decision, grantId } = evaluate(session, check);
+          return send(res, 200, { decision, grantId, explanation: explain(session.intent, decision, check) });
         }
         if (path === '/api/reset') {
           reset(session);

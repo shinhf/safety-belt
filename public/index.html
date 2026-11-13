@@ -8,7 +8,10 @@
   <script src="/app.js" defer></script>
 </head>
 <body>
-  <div class="banner" role="status">SIMULATION — Paperlane Demo is a fictional merchant. No real payments.</div>
+  <div class="banner">
+    SIMULATION: Paperlane Demo is a fictional merchant. Payments and conversions are simulated; no real money moves.
+    <span class="banner-scope">Safety Belt protects only this demo checkout. Terms check: <span id="source">not run yet</span>.</span>
+  </div>
   <main>
     <section aria-labelledby="doc-h">
       <h2 id="doc-h">Document</h2>
@@ -44,9 +47,35 @@
       <h3>Disclosure</h3>
       <p id="disclosure" class="disclosure"></p>
       <form id="pay-form">
-        <button type="submit">Pay and convert</button>
+        <button id="pay" type="submit">Pay and convert</button>
       </form>
-      <p id="message" role="alert"></p>
+      <p id="message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="decision" aria-labelledby="decision-h" hidden>
+      <h2 id="decision-h" tabindex="-1"></h2>
+      <dl>
+        <dt>You approved</dt><dd id="decision-approved"></dd>
+        <dt>This checkout</dt><dd id="decision-disclosed"></dd>
+        <dt>Merchant</dt><dd id="decision-merchant"></dd>
+      </dl>
+      <h3>Why</h3>
+      <ul id="decision-reasons"></ul>
+      <details id="review">
+        <summary>Review subscription terms (read-only)</summary>
+        <p>The checkout's own words, as checked:</p>
+        <ul id="decision-evidence"></ul>
+        <p>Reviewing changes nothing. Safety Belt does not approve subscriptions in this demo.</p>
+      </details>
+      <div class="actions">
+        <button id="back" type="button">Go back to the one-off checkout</button>
+        <button id="recheck" type="button">Check again</button>
+      </div>
+    </section>
+
+    <section id="success" aria-labelledby="success-h" tabindex="-1" hidden>
+      <h2 id="success-h">Done (simulated)</h2>
+      <p id="success-text"></p>
     </section>
 
     <section aria-labelledby="outcome-h">

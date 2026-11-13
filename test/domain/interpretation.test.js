@@ -85,7 +85,7 @@ test('internally inconsistent answers are rejected', () => {
   assert.deepEqual(reasons({ ...RECURRING, renewalCents: null }, trial), ['RECURRING_INCOMPLETE']);
   assert.deepEqual(reasons({ ...ONE_OFF, billingKind: 'unknown' }), ['BILLING_KIND_UNKNOWN']);
   assert.deepEqual(reasons({ ...ONE_OFF, upfrontCents: null }), ['UPFRONT_MISSING']);
-  assert.deepEqual(reasons({ ...ONE_OFF, merchantName: 'DocuQuick Demo' }), ['MERCHANT_MISMATCH']);
+  assert.deepEqual(reasons({ ...ONE_OFF, merchantName: 'DocuQuick Demo' }), ['MERCHANT_NAME_MISMATCH']);
 });
 
 test('an injection-obeying one-off answer for the recurring checkout is a commitment mismatch', () => {
