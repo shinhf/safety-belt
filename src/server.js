@@ -5,6 +5,7 @@ import {
 } from './domain/checkout.js';
 import { confirmIntent, intentView } from './domain/intent.js';
 import { interpretCheckout } from './gemini.js';
+import { evaluate } from './domain/policy.js';
 
 const PUBLIC = new URL('../public/', import.meta.url);
 // Fixed allowlist: URL paths are never joined onto the filesystem.
@@ -80,7 +81,7 @@ export function startServer({ port = 3000, gemini } = {}) {
       if (route === 'GET /api/variants') return send(res, 200, variantList());
       if (route === 'GET /api/state') return send(res, 200, state());
 
-      if (req.method === 'POST' && ['/api/checkout', '/api/intent', '/api/interpret', '/api/reset', '/api/submit'].includes(path)) {
+      if (req.method === 'POST' && ['/api/checkout', '/api/intent', '/api/interpret', '/api/decide', '/api/reset', '/api/submit'].includes(path)) {
         const origin = req.headers.origin;
         if (origin !== undefined && origin !== `http://${host}`) throw new HttpError(403, 'FORBIDDEN_ORIGIN');
         if (path === '/api/checkout') {
@@ -110,6 +111,11 @@ export function startServer({ port = 3000, gemini } = {}) {
           session.checks.clear(); // only the current state's check is ever readable
           session.checks.set(key, check);
           return send(res, 200, { check });
+        }
+        if (path === '/api/decide') {
+          // Server-held state only: the request carries no verdict, interpretation or grant.
+          const { decision, grantId } = evaluate(session, currentCheck());
+          return send(res, 200, { decision, grantId });
         }
         if (path === '/api/reset') {
           reset(session);
