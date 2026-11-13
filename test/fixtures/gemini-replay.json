@@ -1,0 +1,128 @@
+{
+  "_label": "REPLAY: synthetic generateContent bodies, hand-built from the API reference shape (2026-11-13). Not recorded from a live model; never evidence of model accuracy.",
+  "one-off-clear": {
+    "source": "synthetic",
+    "status": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "replay thought",
+                "thought": true
+              },
+              {
+                "text": "{\"upfrontCents\":100,\"currency\":\"USD\",\"merchantName\":\"Paperlane Demo\",\"billingKind\":\"one_off\",\"renewalCents\":null,\"renewalInterval\":null,\"trialDays\":null,\"evidenceStatus\":\"clear\",\"quotations\":[\"USD 1.00 charged once to convert one document.\",\"No subscription and no further charges.\"]}"
+              }
+            ]
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "modelVersion": "gemini-4-hydrogen",
+      "responseId": "replay-one-off-clear"
+    }
+  },
+  "recurring-clear": {
+    "source": "synthetic",
+    "status": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"upfrontCents\":100,\"currency\":\"USD\",\"merchantName\":\"Paperlane Demo\",\"billingKind\":\"recurring\",\"renewalCents\":4995,\"renewalInterval\":\"month\",\"trialDays\":7,\"evidenceStatus\":\"clear\",\"quotations\":[\"Free 7-day trial, then USD 49.95 per month until cancelled.\"]}"
+              }
+            ]
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "modelVersion": "gemini-4-hydrogen",
+      "responseId": "replay-recurring-clear"
+    }
+  },
+  "fabricated-quote": {
+    "source": "synthetic",
+    "status": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"upfrontCents\":100,\"currency\":\"USD\",\"merchantName\":\"Paperlane Demo\",\"billingKind\":\"one_off\",\"renewalCents\":null,\"renewalInterval\":null,\"trialDays\":null,\"evidenceStatus\":\"clear\",\"quotations\":[\"One payment only, never again.\"]}"
+              }
+            ]
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "modelVersion": "gemini-4-hydrogen",
+      "responseId": "replay-fabricated-quote"
+    }
+  },
+  "prose": {
+    "source": "synthetic",
+    "status": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "This looks like a one-off payment."
+              }
+            ]
+          },
+          "finishReason": "STOP",
+          "index": 0
+        }
+      ],
+      "modelVersion": "gemini-4-hydrogen",
+      "responseId": "replay-prose"
+    }
+  },
+  "incomplete": {
+    "source": "synthetic",
+    "status": 200,
+    "body": {
+      "candidates": [
+        {
+          "content": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "{\"upfrontCents\":"
+              }
+            ]
+          },
+          "finishReason": "MAX_TOKENS",
+          "index": 0
+        }
+      ],
+      "modelVersion": "gemini-4-hydrogen",
+      "responseId": "replay-incomplete"
+    }
+  },
+  "safety-block": {
+    "source": "synthetic",
+    "status": 200,
+    "body": {
+      "promptFeedback": {
+        "blockReason": "SAFETY"
+      },
+      "modelVersion": "gemini-4-hydrogen",
+      "responseId": "replay-safety-block"
+    }
+  }
+}

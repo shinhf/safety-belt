@@ -4,6 +4,7 @@ import {
   createSession, selectVariant, publicSnapshot, outcomeView, recordAttempt, reset, variantList,
 } from './domain/checkout.js';
 import { confirmIntent, intentView } from './domain/intent.js';
+import { interpretCheckout } from './gemini.js';
 
 const PUBLIC = new URL('../public/', import.meta.url);
 // Fixed allowlist: URL paths are never joined onto the filesystem.
@@ -47,9 +48,21 @@ async function readJson(req, allowedKeys) {
   return body;
 }
 
-export function startServer({ port = 3000 } = {}) {
+// gemini: injected transport for tests; its answers are labelled replay. Default is the live provider.
+export function startServer({ port = 3000, gemini } = {}) {
+  const provider = gemini
+    ? { ...gemini, source: 'replay' }
+    : { apiKey: process.env.GEMINI_API_KEY, fetch: globalThis.fetch, source: 'live' };
   const session = createSession();
-  const state = () => ({ checkout: publicSnapshot(session.checkout), outcomes: outcomeView(session), intent: intentView(session), simulation: true });
+  const inFlight = new Map(); // tag key -> pending provider call, so concurrent requests share one call
+  const currentTags = () => session.intent && {
+    intentRevision: session.intent.revision, checkoutId: session.checkout.checkoutId, checkoutRevision: session.checkout.revision,
+  };
+  const tagKey = (t) => `${t.intentRevision}:${t.checkoutId}:${t.checkoutRevision}`;
+  const currentCheck = () => (session.intent && session.checks.get(tagKey(currentTags()))) ?? null;
+  const state = () => ({
+    checkout: publicSnapshot(session.checkout), outcomes: outcomeView(session), intent: intentView(session), check: currentCheck(), simulation: true,
+  });
 
   const server = http.createServer(async (req, res) => {
     try {
@@ -67,7 +80,7 @@ export function startServer({ port = 3000 } = {}) {
       if (route === 'GET /api/variants') return send(res, 200, variantList());
       if (route === 'GET /api/state') return send(res, 200, state());
 
-      if (req.method === 'POST' && ['/api/checkout', '/api/intent', '/api/reset', '/api/submit'].includes(path)) {
+      if (req.method === 'POST' && ['/api/checkout', '/api/intent', '/api/interpret', '/api/reset', '/api/submit'].includes(path)) {
         const origin = req.headers.origin;
         if (origin !== undefined && origin !== `http://${host}`) throw new HttpError(403, 'FORBIDDEN_ORIGIN');
         if (path === '/api/checkout') {
@@ -82,6 +95,22 @@ export function startServer({ port = 3000 } = {}) {
           return send(res, 200, { intent: intentView(session) });
         }
         await readJson(req, []);
+        if (path === '/api/interpret') {
+          const tags = currentTags();
+          if (!tags) throw new HttpError(409, 'INTENT_REQUIRED');
+          const key = tagKey(tags);
+          if (!inFlight.has(key)) {
+            inFlight.set(key, interpretCheckout(session.checkout, tags, provider).finally(() => inFlight.delete(key)));
+          }
+          const check = await inFlight.get(key);
+          // The answer describes the state at request time; anything that changed since makes it stale.
+          if (tagKey(currentTags() ?? {}) !== key) {
+            return send(res, 200, { check: { ...check, status: 'stale', reasons: ['STALE'], interpretation: null } });
+          }
+          session.checks.clear(); // only the current state's check is ever readable
+          session.checks.set(key, check);
+          return send(res, 200, { check });
+        }
         if (path === '/api/reset') {
           reset(session);
           return send(res, 200, state());

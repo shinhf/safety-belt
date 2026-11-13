@@ -16,6 +16,8 @@ Consumer complaints motivate the saved scenario but are not reverified here. No 
 
 The selected interpreter is **Gemini 4 Hydrogen (`gemini-4-hydrogen`)**, updated at the user's request. This supersedes the initial Flash selection. The provider smoke check and independent evaluation remain required; no account-specific model access or quality improvement has been measured.
 
+**Gemini API choice (task 3, 13 November 2026, user decision):** the adapter calls `generateContent` on `v1beta` (`src/gemini.js`), not the Interactions API. Structured output is sent as `generationConfig.responseMimeType` + `responseJsonSchema`. The guide's alternative, `responseFormat.text`, is unverified, and so is `thinkingLevel: LOW`, until `npm run smoke:gemini` returns HTTP 200. On 13 November 2026 every live call returned HTTP 402 (prepayment credits depleted). There are no retries: one call must fit the 10-second budget.
+
 ## One coherent stack
 
 | Technology | Purpose and simplest suitable choice | Already in this project? |
