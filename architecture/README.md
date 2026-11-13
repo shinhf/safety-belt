@@ -2,7 +2,7 @@
 
 > Based on the [arc42 template](https://arc42.org) by Dr. Gernot Starke and Dr. Peter Hruschka. Profile: **Lean**
 
-**Scope:** the planned target architecture of the Safety Belt MVP ("One PDF, one payment") against the owned Paperlane Demo checkout. No application code exists yet; nothing here is implemented or measured. Sources: [README.md](../README.md), [docs/technical-decisions.md](../docs/technical-decisions.md), [docs/mvp-backlog.md](../docs/mvp-backlog.md), issues [#1–#8](https://github.com/shinhf/safety-belt/issues) and the [Safety Belt MVP board](https://github.com/users/shinhf/projects/11).
+**Scope:** the planned target architecture of the Safety Belt MVP ("One PDF, one payment") against the owned Paperlane Demo checkout. Sections 5, 8 and 9 describe the implemented code of tasks 1–7 (`main`, `9b8199e`), with task 8 part A on `main` and the rest in progress; the other sections still describe the plan and need regenerating. Nothing here is a measured prevention result. Sources: [README.md](../README.md), [docs/technical-decisions.md](../docs/technical-decisions.md), [docs/mvp-backlog.md](../docs/mvp-backlog.md), issues [#1–#8](https://github.com/shinhf/safety-belt/issues) and the [Safety Belt MVP board](https://github.com/users/shinhf/projects/11).
 
 | # | Section | Status | Last Updated |
 |---|---------|--------|--------------|
@@ -10,11 +10,11 @@
 | 2 | [Architecture Constraints](02-architecture-constraints.md) | Draft | 2026-11-13 |
 | 3 | [Context and Scope](03-context-and-scope.md) | Draft | 2026-11-13 |
 | 4 | [Solution Strategy](04-solution-strategy.md) | Draft | 2026-11-13 |
-| 5 | [Building Block View](05-building-block-view.md) | Draft | 2026-11-13 |
+| 5 | [Building Block View](05-building-block-view.md) | Adequate | 2026-11-13 |
 | 6 | Runtime View | -- | Omitted (Lean) |
 | 7 | Deployment View | -- | Omitted (Lean) |
-| 8 | [Crosscutting Concepts](08-crosscutting-concepts.md) | Draft | 2026-11-13 |
-| 9 | [Architecture Decisions](09-architecture-decisions.md) | Draft | 2026-11-13 |
+| 8 | [Crosscutting Concepts](08-crosscutting-concepts.md) | Adequate | 2026-11-13 |
+| 9 | [Architecture Decisions](09-architecture-decisions.md) | Adequate | 2026-11-13 |
 | 10 | Quality Requirements | -- | Omitted (Lean) |
 | 11 | [Risks and Technical Debt](11-risks-and-technical-debt.md) | Draft | 2026-11-13 |
 | 12 | [Glossary](12-glossary.md) | Draft | 2026-11-13 |
