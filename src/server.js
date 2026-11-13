@@ -1,11 +1,12 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import {
-  createSession, selectVariant, publicSnapshot, outcomeView, recordAttempt, reset, variantList,
+  createSession, selectVariant, publicSnapshot, outcomeView, reset, variantList,
 } from './domain/checkout.js';
 import { confirmIntent, intentView } from './domain/intent.js';
 import { interpretCheckout } from './gemini.js';
 import { evaluate } from './domain/policy.js';
+import { submit } from './domain/execution.js';
 
 const PUBLIC = new URL('../public/', import.meta.url);
 // Fixed allowlist: URL paths are never joined onto the filesystem.
@@ -95,7 +96,7 @@ export function startServer({ port = 3000, gemini } = {}) {
           try { confirmIntent(session, input); } catch (err) { throw new HttpError(400, err.code ?? 'INVALID_INTENT'); }
           return send(res, 200, { intent: intentView(session) });
         }
-        await readJson(req, []);
+        const body = await readJson(req, path === '/api/submit' ? ['grantId'] : []);
         if (path === '/api/interpret') {
           const tags = currentTags();
           if (!tags) throw new HttpError(409, 'INTENT_REQUIRED');
@@ -122,8 +123,10 @@ export function startServer({ port = 3000, gemini } = {}) {
           reset(session);
           return send(res, 200, state());
         }
-        recordAttempt(session);
-        return send(res, 409, { error: 'SUBMISSION_GATE_NOT_INTEGRATED' });
+        // Button, Enter and direct API submissions all land here. No await from here to the response:
+        // submit() checks, consumes and executes in one synchronous step.
+        const result = submit(session, body.grantId);
+        return result.ok ? send(res, 200, { payment: result.payment }) : send(res, 409, { error: result.reason });
       }
       throw new HttpError(404, 'NOT_FOUND');
     } catch (err) {

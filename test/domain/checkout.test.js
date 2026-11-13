@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  createSession, selectVariant, publicSnapshot, outcomeView, recordAttempt, reset,
+  createSession, selectVariant, publicSnapshot, outcomeView, reset,
 } from '../../src/domain/checkout.js';
 
 test('revision increments on every change, including away and back', () => {
@@ -31,7 +31,7 @@ test('publicSnapshot omits commitment and hidden labels', () => {
 
 test('reset zeroes outcomes and clears intent/checks/grants', () => {
   const s = createSession();
-  recordAttempt(s);
+  s.outcomes.attemptedSubmissions = 3;
   s.grants.set('g', {});
   selectVariant(s, 'non-usd');
   reset(s);

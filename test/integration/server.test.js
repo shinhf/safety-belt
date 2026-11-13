@@ -57,11 +57,11 @@ test('checkout switch bumps revision and hides commitment', async () => {
   assert.equal((await post('/api/checkout', '{not json')).status, 400);
 });
 
-test('submit is refused and never executes', async () => {
+test('submit without a grant is refused and never executes', async () => {
   await post('/api/reset', {});
   const res = await post('/api/submit', {});
   assert.equal(res.status, 409);
-  assert.deepEqual(await res.json(), { error: 'SUBMISSION_GATE_NOT_INTEGRATED' });
+  assert.deepEqual(await res.json(), { error: 'GRANT_REQUIRED' });
   const { outcomes, simulation } = await (await fetch(url + '/api/state')).json();
   assert.equal(simulation, true);
   assert.equal(outcomes.attemptedSubmissions, 1);

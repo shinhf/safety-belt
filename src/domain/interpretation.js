@@ -1,5 +1,6 @@
 // Interpretation domain: the JSON Schema sent to Gemini and the local validator that enforces it.
 // Gemini strips unsupported keywords and does not guarantee semantics, so the validator is the real gate.
+import { COMMITMENT_FIELDS } from './checkout.js';
 
 export const BILLING_KINDS = ['one_off', 'recurring', 'unknown'];
 export const INTERVALS = ['day', 'week', 'month', 'year'];
@@ -70,8 +71,7 @@ function semanticErrors(o, snapshot) {
   if (errors.length) return errors;
 
   const c = snapshot.commitment;
-  const material = ['upfrontCents', 'currency', 'billingKind', 'renewalCents', 'renewalInterval', 'trialDays'];
-  if (material.some((k) => o[k] !== c[k])) errors.push('COMMITMENT_MISMATCH');
+  if (COMMITMENT_FIELDS.some((k) => o[k] !== c[k])) errors.push('COMMITMENT_MISMATCH');
   return errors;
 }
 

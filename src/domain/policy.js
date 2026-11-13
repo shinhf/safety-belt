@@ -1,9 +1,8 @@
 // Pure policy: compares the owned execution commitment and the validated interpretation with the
 // independently approved intent. The model can explain terms; only this code can allow.
 import { randomBytes } from 'node:crypto';
-import { deepFreeze } from './checkout.js';
+import { deepFreeze, COMMITMENT_FIELDS as MATERIAL } from './checkout.js';
 
-const MATERIAL = ['upfrontCents', 'currency', 'billingKind', 'renewalCents', 'renewalInterval', 'trialDays'];
 const isCents = (v) => Number.isSafeInteger(v) && v >= 0;
 
 const validIntent = (i) => i && typeof i.intentId === 'string' && Number.isSafeInteger(i.revision)

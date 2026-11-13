@@ -7,6 +7,9 @@ const oneOff = (upfrontCents, currency = 'USD') => ({
 });
 const trialMonthly = { upfrontCents: 100, currency: 'USD', billingKind: 'recurring', renewalCents: 4995, renewalInterval: 'month', trialDays: 7 };
 
+// The fields that define what a checkout charges; every comparison of terms uses this one list.
+export const COMMITMENT_FIELDS = Object.freeze(['upfrontCents', 'currency', 'billingKind', 'renewalCents', 'renewalInterval', 'trialDays']);
+
 export const VARIANTS = {
   'one-off-usd1': {
     label: 'USD 1 one-off',
@@ -108,10 +111,6 @@ export function publicSnapshot({ checkoutId, revision, merchant, document, discl
 }
 
 export const outcomeView = (session) => structuredClone(session.outcomes);
-
-export function recordAttempt(session) {
-  session.outcomes.attemptedSubmissions += 1;
-}
 
 export function reset(session) {
   return Object.assign(session, createSession());
