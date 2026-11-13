@@ -2,7 +2,7 @@
 
 Safety Belt pauses a supported desktop-browser checkout when its disclosed billing commitment conflicts with the user's explicitly approved intent, while preserving legitimate task completion.
 
-**Status:** tasks 1–5 are on `main` (checkout fixture, intent confirmation, Gemini interpretation, policy and grants, submission gate). Task 6 (pause explanation UI) and task 7 (browser tests) are in progress. Task 8 (live-model evaluation) is open. The live Gemini smoke check (task 3) has passed once. That is not a measured prevention result.
+**Status:** tasks 1–7 are on `main` (checkout fixture, intent confirmation, Gemini interpretation, policy and grants, submission gate, pause explanation UI, browser tests). Task 8 (live-model evaluation) is open. The live Gemini smoke check (task 3) has passed once. That is not a measured prevention result.
 
 ## MVP: one PDF, one payment
 
@@ -107,6 +107,7 @@ This needs `GEMINI_API_KEY` in `.env`. It sends one synthetic checkout (by defau
 
 ### Troubleshooting
 
+- **`Executable doesn't exist at …/chromium_headless_shell-…`** when running the browser tests: the Chromium build for this Playwright version is not installed. Run `npx playwright install chromium`. On a bare Linux host that also lacks the system libraries Chromium needs, run `npx playwright install --with-deps chromium` (it installs them with the package manager, so it may ask for sudo).
 - **Wrong Node version:** run `node --version`. It must print `v24.20.0` or a later 24.x. `npm ci` warns when it doesn't (`engines`).
 - **Port already in use** (`EADDRINUSE`): stop the other process, or start on a free port with `PORT` (see above).
 - **421 response:** you opened the app through a host name other than `127.0.0.1` or `localhost`, for example the machine name, a LAN IP or a proxy. Use `http://127.0.0.1:<port>`.

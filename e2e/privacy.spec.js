@@ -1,7 +1,7 @@
 // Done-when 5: what leaves the service (provider payload, served assets, API responses) and what it refuses.
 import http from 'node:http';
 import { VARIANTS } from '../src/domain/checkout.js';
-import { test, expect, KEY, INTENT, approve, chooseVariant, pay, terms, effects, NO_EFFECTS } from './fixtures.js';
+import { test, expect, open, KEY, INTENT, approve, chooseVariant, pay, terms, effects, NO_EFFECTS } from './fixtures.js';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-4-hydrogen:generateContent';
 // Values the provider must never see: the key, the approval, internal ids, grants/payments, hidden evaluation labels.
@@ -29,7 +29,7 @@ function raw(baseUrl, { method = 'GET', path = '/', headers = {}, body } = {}) {
 async function journey(page, stub) {
   stub.replay('recurring-clear');
   stub.replay('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await chooseVariant(page, 'trial-recurring');
   await pay(page);
@@ -69,6 +69,51 @@ test('[gate·replay] served assets and every API response hold no key or hidden 
     .map(async (path) => ({ url: path, text: await (await request.get(path)).text() })));
   for (const { url, text } of [...fromPage, ...direct]) {
     for (const value of NEVER_TO_BROWSER) expect(text, `${url} contains ${value}`).not.toContain(value);
+  }
+});
+
+// Exact key sets (an allowlist): a hidden label leaked as a value under a new key fails here even if no denylisted string appears.
+const keys = (o) => Object.keys(o).sort();
+const CHECKOUT_KEYS = ['checkoutId', 'disclosure', 'document', 'merchant', 'revision'];
+const CHECK_KEYS = ['input', 'interpretation', 'provider', 'reasons', 'source', 'status', 'tags'];
+const INTERPRETATION_KEYS = ['billingKind', 'currency', 'evidenceStatus', 'merchantName', 'quotations', 'renewalCents', 'renewalInterval', 'trialDays', 'upfrontCents'];
+const DECISION_KEYS = ['checkoutId', 'checkoutRevision', 'decision', 'evidence', 'intentRevision', 'reasons'];
+const EXPLANATION_KEYS = ['approved', 'disclosed', 'evidence', 'headline', 'merchant', 'reasons', 'recurringDisclosed', 'source', 'tone'];
+
+test('[gate·replay] variants, state and decide responses carry only their documented fields', async ({ page, stub }) => {
+  const bodies = [];
+  page.on('response', (r) => {
+    const path = new URL(r.url()).pathname;
+    if (['/api/variants', '/api/state', '/api/decide'].includes(path)) bodies.push(r.json().then((json) => ({ path, json })));
+  });
+  await journey(page, stub);
+  const seen = await Promise.all(bodies);
+  const of = (path) => seen.filter((b) => b.path === path).map((b) => b.json);
+
+  const [variants] = of('/api/variants');
+  expect(variants).toHaveLength(Object.keys(VARIANTS).length);
+  for (const v of variants) expect(keys(v)).toEqual(['id', 'label']);
+
+  const states = of('/api/state');
+  expect(states.some((s) => s.check !== null)).toBe(true);
+  for (const s of states) {
+    expect(keys(s.checkout)).toEqual(CHECKOUT_KEYS);
+    expect(keys(s.checkout.merchant)).toEqual(['id', 'name']);
+    expect(keys(s.checkout.document)).toEqual(['action', 'id']);
+    if (s.check === null) continue;
+    expect(keys(s.check)).toEqual(CHECK_KEYS);
+    expect(keys(s.check.tags)).toEqual(['checkoutId', 'checkoutRevision', 'intentRevision']);
+    expect(keys(s.check.input)).toEqual(['disclosureText', 'merchantDisplayName']);
+    expect(keys(s.check.provider)).toEqual(['api', 'model', 'modelVersion', 'responseId']);
+    expect(keys(s.check.interpretation)).toEqual(INTERPRETATION_KEYS);
+  }
+
+  const decides = of('/api/decide');
+  expect(decides).toHaveLength(2);
+  for (const d of decides) {
+    expect(keys(d)).toEqual(['decision', 'explanation', 'grantId']);
+    expect(keys(d.decision)).toEqual(DECISION_KEYS);
+    expect(keys(d.explanation)).toEqual(EXPLANATION_KEYS);
   }
 });
 
@@ -119,7 +164,7 @@ test('[gate·replay] HTML-like quotations from the model create no element and r
   stub.answer(terms({ quotations: ['<img src=x onerror="window.__sbXss=1">', '<script>window.__sbXss=2</script>'] }));
   const dialogs = [];
   page.on('dialog', (d) => { dialogs.push(d.message()); d.dismiss(); });
-  await page.goto('/');
+  await open(page);
   await approve(page);
   const { decision } = await pay(page);
   expect(decision.decision).toBe('CLARIFY');

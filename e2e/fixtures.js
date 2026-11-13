@@ -70,6 +70,13 @@ export { expect };
 
 const isPost = (path) => (r) => new URL(r.url()).pathname === path && r.request().method() === 'POST';
 
+// init() wires the forms only after its first refresh() renders the state (public/app.js:116-120).
+// Acting before that falls back to a native GET form submission, so every spec opens the page through here.
+export async function open(page) {
+  await page.goto('/');
+  await expect(page.locator('#revision')).not.toBeEmpty();
+}
+
 // Confirms the approval on Safety Belt's own form, as a user does.
 export async function approve(page, cap = '2.00') {
   await page.getByLabel('Maximum charge (USD)').fill(cap);
@@ -87,14 +94,23 @@ export async function chooseVariant(page, variantId) {
 
 export const payButton = (page) => page.getByRole('button', { name: 'Pay and convert' });
 
-// Clicks Pay (or presses Enter on it) and waits until the whole submit handler has finished:
-// Pay stays disabled from the click until its `finally`, after any /api/submit. Returns the /api/decide body.
+// Clicks Pay (or presses Enter on it) and waits until the submit handler has finished: Pay is re-enabled
+// in its `finally`, which then reloads GET /api/state (public/app.js:172-176). Returns the /api/decide body.
 export async function pay(page, { key = false } = {}) {
   const decided = page.waitForResponse(isPost('/api/decide'));
+  // The first GET /api/state requested after POST /api/decide is the handler's own refresh,
+  // not a refresh still in flight from an earlier action.
+  let decideSent = false;
+  const refreshed = page.waitForRequest((req) => {
+    const path = new URL(req.url()).pathname;
+    if (req.method() === 'POST' && path === '/api/decide') decideSent = true;
+    return decideSent && req.method() === 'GET' && path === '/api/state';
+  });
   if (key) await payButton(page).press('Enter');
   else await payButton(page).click();
   const body = await (await decided).json();
   await expect(payButton(page)).toBeEnabled();
+  await (await refreshed).response();
   return body;
 }
 

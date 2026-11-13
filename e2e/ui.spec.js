@@ -1,12 +1,13 @@
 // Done-when 6: Task 6 browser behaviours — keyboard path, focus, read-only review, network failure, refused submit.
-import { test, expect, approve, chooseVariant, pay, payButton, waitForPost, effects, NO_EFFECTS } from './fixtures.js';
+import { test, expect, open, approve, chooseVariant, pay, payButton, waitForPost, effects, NO_EFFECTS } from './fixtures.js';
+import { VARIANTS } from '../src/domain/checkout.js';
 
 const pausedHeading = (page) => page.getByRole('heading', { name: 'Paused: this checkout does not match what you approved.' });
 const allowHeading = (page) => page.getByRole('heading', { name: 'The terms match your approval.' });
 
 test('[gate·replay] Enter on Pay and convert reaches the gate and completes once, focusing the result', async ({ page, stub, state }) => {
   stub.replay('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   const submitted = waitForPost(page, '/api/submit');
   await pay(page, { key: true });
@@ -21,7 +22,7 @@ test('[gate·replay] Enter on Pay and convert reaches the gate and completes onc
 
 test('[gate·replay] a pause moves focus to the decision heading', async ({ page, stub, state }) => {
   stub.replay('recurring-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await chooseVariant(page, 'trial-recurring');
   await pay(page);
@@ -31,7 +32,7 @@ test('[gate·replay] a pause moves focus to the decision heading', async ({ page
 
 test('[gate·replay] opening the subscription review sends no request and changes nothing', async ({ page, stub, state }) => {
   stub.replay('recurring-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await chooseVariant(page, 'trial-recurring');
   await pay(page);
@@ -47,7 +48,7 @@ test('[gate·replay] opening the subscription review sends no request and change
 
 test('[gate·replay] a network failure on the terms check re-enables Pay and focuses it', async ({ page, stub, state }) => {
   await page.route('**/api/interpret', (route) => route.abort());
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await payButton(page).click();
   await expect(page.getByText('Network error. No payment was made.')).toBeVisible();
@@ -61,7 +62,7 @@ test('[gate·replay] a network failure on the terms check re-enables Pay and foc
 
 test('[gate·replay] a refused submit leaves no allow panel visible and focuses Pay', async ({ page, stub, state, request }) => {
   stub.replay('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await page.route('**/api/submit', async (route) => {
     await request.post('/api/checkout', { data: { variantId: 'trial-recurring' } }); // checkout changes after the ALLOW check
@@ -87,7 +88,7 @@ test('[dom-safety·mocked-api] a quotation is rendered as literal text', async (
     json.explanation.evidence = quotes;
     await route.fulfill({ response, json });
   });
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await chooseVariant(page, 'trial-recurring');
   await pay(page);
@@ -96,4 +97,72 @@ test('[dom-safety·mocked-api] a quotation is rendered as literal text', async (
   await expect(page.locator('img')).toHaveCount(0);
   await expect(page.locator('script')).toHaveCount(1); // only /app.js
   expect(await page.evaluate(() => window.__sbXss)).toBeUndefined();
+});
+
+test('[gate·replay] after a replay check the banner says the terms came from a replay fixture', async ({ page, stub, state }) => {
+  stub.replay('one-off-clear');
+  await open(page);
+  await expect(page.getByText('not run yet', { exact: true })).toBeVisible();
+  await approve(page);
+  await pay(page);
+  await expect(page.getByText('replay fixture (not a live model)', { exact: true })).toBeVisible();
+  expect((await state()).check.source).toBe('replay');
+});
+
+test('[gate·replay] Enter on Check again re-runs the check and completes once', async ({ page, stub, state }) => {
+  stub.fail('http500');
+  await open(page);
+  await approve(page);
+  await pay(page);
+  stub.replay('one-off-clear');
+  const submitted = waitForPost(page, '/api/submit');
+  await page.getByRole('button', { name: 'Check again' }).press('Enter');
+  expect((await submitted).status()).toBe(200);
+  await expect(page.getByRole('region', { name: 'Done (simulated)' })).toBeFocused();
+  const s = await state();
+  expect(s.outcomes.attemptedSubmissions).toBe(1);
+  expect(s.outcomes.executions).toBe(1);
+  expect(s.outcomes.payments).toHaveLength(1);
+  expect(s.outcomes.subscriptions).toEqual([]);
+});
+
+test('[gate·replay] Space on Go back to the one-off checkout switches back and focuses Pay', async ({ page, stub, state }) => {
+  stub.replay('recurring-clear');
+  await open(page);
+  await approve(page);
+  await chooseVariant(page, 'trial-recurring');
+  await pay(page);
+  await expect(pausedHeading(page)).toBeFocused();
+  const switched = waitForPost(page, '/api/checkout');
+  await page.getByRole('button', { name: 'Go back to the one-off checkout' }).press('Space');
+  const res = await switched;
+  expect(res.request().postDataJSON()).toEqual({ variantId: 'one-off-usd1' });
+  expect(res.status()).toBe(200);
+  await expect(payButton(page)).toBeFocused();
+  await expect(page.getByLabel('Checkout variant')).toHaveValue('one-off-usd1');
+  const s = await state();
+  expect(s.checkout.disclosure).toBe(VARIANTS['one-off-usd1'].disclosure);
+  expect(effects(s.outcomes)).toEqual(NO_EFFECTS);
+});
+
+test('[gate·replay] Enter and Space on the review summary open and close it without a request', async ({ page, stub, state }) => {
+  stub.replay('recurring-clear');
+  await open(page);
+  await approve(page);
+  await chooseVariant(page, 'trial-recurring');
+  await pay(page);
+  await expect(pausedHeading(page)).toBeFocused();
+  const before = await state();
+  const requests = [];
+  page.on('request', (r) => requests.push(r.url()));
+  const summary = page.getByText('Review subscription terms (read-only)');
+  const quote = page.getByText('Free 7-day trial, then USD 49.95 per month until cancelled.', { exact: true });
+  await summary.press('Enter');
+  await expect(quote).toBeVisible();
+  await summary.press('Space');
+  await expect(quote).toBeHidden();
+  await summary.press('Space');
+  await expect(quote).toBeVisible();
+  expect(requests).toEqual([]);
+  expect(await state()).toEqual(before);
 });

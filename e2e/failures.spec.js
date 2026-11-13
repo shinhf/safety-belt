@@ -1,5 +1,5 @@
 // Done-when 4: provider and interpretation failures pause with zero effects, then a safe recheck recovers.
-import { test, expect, approve, chooseVariant, pay, payButton, waitForPost, terms, effects, NO_EFFECTS } from './fixtures.js';
+import { test, expect, open, approve, chooseVariant, pay, payButton, waitForPost, terms, effects, NO_EFFECTS } from './fixtures.js';
 
 const FAILURES = [
   ['timeout', 'unavailable', 'PROVIDER_TIMEOUT', (stub) => stub.fail('timeout')],
@@ -31,7 +31,7 @@ async function expectCompletedOnce(page, state) {
 for (const [name, status, reason, queue] of FAILURES) {
   test(`[gate·replay] ${name} pauses with zero effects and Check again recovers`, async ({ page, stub, state }) => {
     queue(stub);
-    await page.goto('/');
+    await open(page);
     await approve(page);
     const { decision, grantId } = await pay(page);
     expect(decision.decision).toBe('CLARIFY');
@@ -48,7 +48,7 @@ for (const [name, status, reason, queue] of FAILURES) {
 
 test('[gate·replay] a one-off answer for recurring terms (semantic/execution disagreement) pauses, and going back recovers', async ({ page, stub, state }) => {
   stub.answer(terms({ quotations: ['USD 1 today.'] })); // a real substring of the recurring disclosure
-  await page.goto('/');
+  await open(page);
   await approve(page);
   await chooseVariant(page, 'trial-recurring');
   const { decision } = await pay(page);

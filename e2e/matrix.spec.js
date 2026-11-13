@@ -1,9 +1,9 @@
 // Done-when 2: the acceptance matrix through the real page and service. Replay answers are labelled test doubles.
-import { test, expect, approve, chooseVariant, pay, terms, effects, NO_EFFECTS } from './fixtures.js';
+import { test, expect, open, approve, chooseVariant, pay, terms, effects, NO_EFFECTS } from './fixtures.js';
 
 test('[gate·replay] USD 1 one-off completes exactly once with zero subscriptions', async ({ page, stub, state }) => {
   stub.replay('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   const { decision } = await pay(page);
   expect(decision.decision).toBe('ALLOW');
@@ -37,7 +37,7 @@ const REFUSED = [
 for (const [variant, expected, reason, queue] of REFUSED) {
   test(`[gate·replay] ${variant}: a click on Pay ends with zero executions, payments and subscriptions`, async ({ page, stub, state }) => {
     queue(stub);
-    await page.goto('/');
+    await open(page);
     await approve(page);
     await chooseVariant(page, variant);
     const { decision, grantId } = await pay(page);

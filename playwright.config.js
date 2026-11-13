@@ -6,6 +6,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
+  failOnFlakyTests: true, // a race that passes only on retry (e.g. a double payment) must fail the run
   reporter: 'list',
   use: { trace: 'on-first-retry' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],

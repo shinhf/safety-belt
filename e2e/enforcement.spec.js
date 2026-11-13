@@ -1,6 +1,6 @@
 // Done-when 3: the gate holds against check-to-submit mutation, late model answers, duplicates and grant replay.
 // page.route only delays the browser's own /api/submit so the test can change real service state in that window.
-import { test, expect, approve, chooseVariant, pay, payButton, waitForPost, effects, NO_EFFECTS } from './fixtures.js';
+import { test, expect, open, approve, chooseVariant, pay, payButton, waitForPost, effects, NO_EFFECTS } from './fixtures.js';
 
 const isSubmit = (r) => new URL(r.url()).pathname === '/api/submit' && r.method() === 'POST';
 
@@ -8,7 +8,7 @@ for (const variant of ['trial-recurring', 'changed-merchant']) {
   for (const key of [false, true]) {
     test(`[gate·replay] checkout switched to ${variant} after an ALLOW check: ${key ? 'Enter' : 'click'} on Pay makes no payment`, async ({ page, stub, state, request }) => {
       stub.replay('one-off-clear');
-      await page.goto('/');
+      await open(page);
       await approve(page);
       await page.route('**/api/submit', async (route) => {
         await request.post('/api/checkout', { data: { variantId: variant } }); // mutate after decide, before submit
@@ -30,7 +30,7 @@ for (const variant of ['trial-recurring', 'changed-merchant']) {
 
 test('[gate·replay] a model answer released after switching away and back makes no payment', async ({ page, stub, state }) => {
   const release = stub.hold('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   const interpreted = waitForPost(page, '/api/interpret');
   const decided = waitForPost(page, '/api/decide');
@@ -47,9 +47,9 @@ test('[gate·replay] a model answer released after switching away and back makes
   expect(effects(s.outcomes)).toEqual(NO_EFFECTS);
 });
 
-test('[gate·replay] a model answer released after Reset makes no payment', async ({ page, stub, state }) => {
+test('[gate·replay] a model answer released after Reset and a new approval makes no payment', async ({ page, stub, state }) => {
   const release = stub.hold('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   const interpreted = waitForPost(page, '/api/interpret');
   const decided = waitForPost(page, '/api/decide');
@@ -58,12 +58,16 @@ test('[gate·replay] a model answer released after Reset makes no payment', asyn
   const wasReset = waitForPost(page, '/api/reset');
   await page.getByRole('button', { name: 'Reset' }).click();
   await wasReset;
+  await approve(page); // a valid approval again, so only the stale answer can explain the pause
   release();
   expect((await (await interpreted).json()).check.status).toBe('stale');
-  expect((await (await decided).json()).decision.decision).toBe('CLARIFY');
+  const { decision } = await (await decided).json();
+  expect(decision.decision).toBe('CLARIFY');
+  expect(decision.reasons).toEqual(['INTERPRETATION_MISSING']); // not INTENT_MISSING
   await expect(payButton(page)).toBeEnabled();
   const s = await state();
-  expect(s.intent).toBeNull();
+  expect(s.intent.capCents).toBe(200);
+  expect(s.check).toBeNull();
   expect(s.outcomes.attemptedSubmissions).toBe(0);
   expect(effects(s.outcomes)).toEqual(NO_EFFECTS);
 });
@@ -81,13 +85,14 @@ for (const [how, act] of [
     stub.replay('one-off-clear'); // a second check, if the page sent one, would be answered too
     const submits = [];
     page.on('request', (r) => { if (isSubmit(r)) submits.push(r); });
-    await page.goto('/');
+    await open(page);
     await approve(page);
     await act(page);
     await expect(page.getByRole('region', { name: 'Done (simulated)' })).toBeVisible();
     await expect(payButton(page)).toBeEnabled();
+    expect(submits).toHaveLength(1); // the browser sent one submit, apart from how many the gate let through
     const s = await state();
-    expect(s.outcomes.attemptedSubmissions).toBe(submits.length);
+    expect(s.outcomes.attemptedSubmissions).toBe(1);
     expect(s.outcomes.executions).toBe(1);
     expect(s.outcomes.payments).toHaveLength(1);
     expect(s.outcomes.subscriptions).toEqual([]);
@@ -97,7 +102,7 @@ for (const [how, act] of [
 
 test('[gate·replay] the browser grant replayed concurrently and later through the API pays once', async ({ page, stub, state, request }) => {
   stub.replay('one-off-clear');
-  await page.goto('/');
+  await open(page);
   await approve(page);
   let replays = [];
   await page.route('**/api/submit', async (route) => {
