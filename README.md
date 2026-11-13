@@ -2,7 +2,7 @@
 
 Safety Belt pauses a supported desktop-browser checkout when its disclosed billing commitment conflicts with the user's explicitly approved intent, while preserving legitimate task completion.
 
-**Status:** tasks 1–4 implemented (checkout fixture, intent confirmation, Gemini interpretation, policy and grants); submission gate, pause explanation, browser tests and live-model evaluation (tasks 5–8) are open. The live Gemini smoke check has not passed yet.
+**Status:** tasks 1–5 are on `main` (checkout fixture, intent confirmation, Gemini interpretation, policy and grants, submission gate). Task 6 (pause explanation UI) and task 7 (browser tests) are in progress. Task 8 (live-model evaluation) is open. The live Gemini smoke check (task 3) has passed once. That is not a measured prevention result.
 
 ## MVP: one PDF, one payment
 
@@ -25,13 +25,90 @@ No database, cloud deployment, browser extension, OCR, GPU/NPU pipeline, account
 
 See the [ordered implementation backlog](docs/mvp-backlog.md) for tasks, acceptance criteria, dependencies and the Definition of Done. See [technical decisions and source reconciliation](docs/technical-decisions.md) for the shared contract and evidence.
 
-Tests use labelled replay responses, not the live provider. No live-model integration or measured prevention result is claimed until the smoke check (task 3) and evaluation (task 8) pass.
+Tests use labelled replay responses, not the live provider. The live Gemini smoke check (task 3) has passed once; no model accuracy or measured prevention result is claimed until the evaluation (task 8) passes.
 
 ## Run
 
-Requires Node.js 24.20.0 (see `.nvmrc`); no dependencies to install.
+Linux and Windows are both supported hosts (TC13). The app is developed on Linux. It is supported on Windows (TC13) but not yet verified there.
+
+### Prerequisites
+
+- **Node.js 24.20.0** (pinned in `.nvmrc`). On Linux use, for example, nvm (`nvm install && nvm use`). On Windows use nvm-windows, fnm or the official installer.
+- **npm** (ships with Node.js).
+- **Git**.
+- Nothing else. The service runs on Node built-ins. The only dev dependency is Playwright, for the browser tests.
+
+### Setup
+
+Linux / macOS:
 
 ```bash
-npm start   # serves the simulation on http://127.0.0.1:3000 (override with PORT)
-npm test    # domain unit tests + HTTP integration tests
+git clone https://github.com/shinhf/safety-belt.git
+cd safety-belt
+npm ci
+cp .env.example .env   # optional: then set GEMINI_API_KEY in .env
 ```
+
+Windows (PowerShell):
+
+```powershell
+git clone https://github.com/shinhf/safety-belt.git
+cd safety-belt
+npm ci
+Copy-Item .env.example .env   # optional: then set GEMINI_API_KEY in .env
+```
+
+`.env` holds `GEMINI_API_KEY` and `GEMINI_MODEL` (default `gemini-4-hydrogen`). Git ignores it, so the key stays on your machine. The app also runs without a key. In that case the terms check reports "unavailable" and Safety Belt pauses every checkout (fail closed).
+
+### Start the app
+
+```bash
+npm start
+```
+
+Open <http://127.0.0.1:3000>. Stop it with Ctrl+C.
+
+The default port is 3000. To change it:
+
+```bash
+PORT=4000 npm start
+```
+
+```powershell
+$env:PORT=4000; npm start
+```
+
+```cmd
+set PORT=4000 && npm start
+```
+
+The server listens only on `127.0.0.1`, so other machines cannot reach it. Open it as `http://127.0.0.1:<port>` or `http://localhost:<port>`. Any other host name is rejected with `421 Misdirected Request`.
+
+### Tests
+
+These commands are the same on both OSes:
+
+```bash
+npm test                          # domain unit tests + HTTP integration tests (node:test); no key, no network
+npx playwright install chromium   # one-time browser download (added with Task 7)
+npm run test:e2e                  # Playwright + Chromium browser tests (added with Task 7)
+npm run test:all                  # both suites (added with Task 7)
+```
+
+The tests use labelled replay model answers, not the live provider. A passing run is evidence that the gate works. It says nothing about model accuracy.
+
+### Live Gemini smoke check
+
+```bash
+npm run smoke:gemini
+```
+
+This needs `GEMINI_API_KEY` in `.env`. It sends one synthetic checkout (by default `trial-recurring`; you can pass another variant id as an argument) through the production adapter and validator. It prints a JSON report with the verdict, API, model, status, reasons and interpretation, and it never prints the key. Exit codes: `0` PASS, `1` FAIL, `2` SKIPPED (no key), `3` unknown variant.
+
+### Troubleshooting
+
+- **Wrong Node version:** run `node --version`. It must print `v24.20.0` or a later 24.x. `npm ci` warns when it doesn't (`engines`).
+- **Port already in use** (`EADDRINUSE`): stop the other process, or start on a free port with `PORT` (see above).
+- **421 response:** you opened the app through a host name other than `127.0.0.1` or `localhost`, for example the machine name, a LAN IP or a proxy. Use `http://127.0.0.1:<port>`.
+- **PowerShell says "running scripts is disabled"** for `npm` or `npx`: run `npm.cmd` / `npx.cmd`, or allow local scripts for your user with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+- **Line endings:** Git on Windows may check files out with CRLF (`core.autocrlf`). Per TC13 the code and tests do not assume a particular line ending or a case-sensitive file system. If a test fails only on Windows, report it as a bug.
