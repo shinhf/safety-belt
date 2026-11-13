@@ -16,7 +16,14 @@ Consumer complaints motivate the saved scenario but are not reverified here. No 
 
 The selected interpreter is **Gemini 4 Hydrogen (`gemini-4-hydrogen`)**, updated at the user's request. This supersedes the initial Flash selection. The provider smoke check and independent evaluation remain required; no account-specific model access or quality improvement has been measured.
 
-**Gemini API choice (task 3, 13 November 2026, user decision):** the adapter calls `generateContent` on `v1beta` (`src/gemini.js`), not the Interactions API. Structured output is sent as `generationConfig.responseMimeType` + `responseJsonSchema`. The guide's alternative, `responseFormat.text`, is unverified, and so is `thinkingLevel: LOW`, until `npm run smoke:gemini` returns HTTP 200. On 13 November 2026 every live call returned HTTP 402 (prepayment credits depleted). There are no retries: one call must fit the 10-second budget.
+**Gemini API choice (task 3, 13 November 2026, user decision):** the adapter calls `generateContent` on `v1beta` (`src/gemini.js`), not the Interactions API. Structured output is sent as `generationConfig.responseMimeType` + `responseJsonSchema`. There are no retries: one call must fit the 10-second budget.
+
+Live evidence, 13 November 2026 (21:17–21:42 UTC):
+- `GET v1beta/models/gemini-4-hydrogen` returns HTTP 200: `version` 3.0, `supportedGenerationMethods` includes `generateContent`, `thinking: true`. The key and the pinned model ID are valid.
+- `countTokens` with the exact production `generationConfig` returns HTTP 200 (138 tokens). Controls with an unknown field and with `thinkingLevel: "NOPE"` each return HTTP 400 `INVALID_ARGUMENT`. So the API accepts `responseJsonSchema` and `thinkingLevel: LOW` as valid request fields.
+- Every `generateContent` call (and one Interactions probe) returns **HTTP 402**: "Your prepayment credits are depleted". No model answer has been obtained, so it is still unproven that the model honours the schema at generation time.
+
+Task 3 acceptance criterion 1 stays open until `npm run smoke:gemini` prints `PASS` after the project's prepaid credit is topped up.
 
 ## One coherent stack
 
