@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Safety Belt — Paperlane Demo (Simulation)</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="banner" role="status">SIMULATION — Paperlane Demo is a fictional merchant. No real payments.</div>
+  <main>
+    <section aria-labelledby="doc-h">
+      <h2 id="doc-h">Document</h2>
+      <p class="card">synthetic-report.pdf — synthetic, no upload</p>
+    </section>
+
+    <section aria-labelledby="checkout-h">
+      <h2 id="checkout-h">Checkout</h2>
+      <label for="variant">Checkout variant</label>
+      <select id="variant"></select>
+      <dl>
+        <dt>Merchant</dt><dd id="merchant"></dd>
+        <dt>Revision</dt><dd id="revision"></dd>
+      </dl>
+      <h3>Disclosure</h3>
+      <p id="disclosure" class="disclosure"></p>
+      <form id="pay-form">
+        <button type="submit">Pay and convert</button>
+      </form>
+      <p id="message" role="alert"></p>
+    </section>
+
+    <section aria-labelledby="outcome-h">
+      <h2 id="outcome-h">Outcomes (read-only)</h2>
+      <dl>
+        <dt>Attempted submissions</dt><dd id="attempted"></dd>
+        <dt>Executions</dt><dd id="executions"></dd>
+        <dt>Payments</dt><dd id="payments"></dd>
+        <dt>Subscriptions</dt><dd id="subscriptions"></dd>
+        <dt>Conversion status</dt><dd id="conversion"></dd>
+      </dl>
+    </section>
+
+    <button id="reset" type="button">Reset</button>
+  </main>
+</body>
+</html>

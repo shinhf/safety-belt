@@ -26,3 +26,12 @@ No database, cloud deployment, browser extension, OCR, GPU/NPU pipeline, account
 See the [ordered implementation backlog](docs/mvp-backlog.md) for tasks, acceptance criteria, dependencies and the Definition of Done. See [technical decisions and source reconciliation](docs/technical-decisions.md) for the shared contract and evidence.
 
 The repository contains planning artifacts only. Model credentials and a live provider smoke check are implementation prerequisites; no working integration or measured prevention result is claimed.
+
+## Run
+
+Requires Node.js 24.20.0 (see `.nvmrc`); no dependencies to install.
+
+```bash
+npm start   # serves the simulation on http://127.0.0.1:3000 (override with PORT)
+npm test    # domain unit tests + HTTP integration tests
+```

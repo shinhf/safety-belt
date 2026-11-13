@@ -1,0 +1,10 @@
+{
+  "name": "safety-belt",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24.20.0 <25" },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test \"test/**/*.test.js\""
+  }
+}
