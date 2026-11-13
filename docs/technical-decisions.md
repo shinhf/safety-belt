@@ -21,9 +21,13 @@ The selected interpreter is **Gemini 4 Hydrogen (`gemini-4-hydrogen`)**, updated
 Live evidence, 13 November 2026 (21:17–21:42 UTC):
 - `GET v1beta/models/gemini-4-hydrogen` returns HTTP 200: `version` 3.0, `supportedGenerationMethods` includes `generateContent`, `thinking: true`. The key and the pinned model ID are valid.
 - `countTokens` with the exact production `generationConfig` returns HTTP 200 (138 tokens). Controls with an unknown field and with `thinkingLevel: "NOPE"` each return HTTP 400 `INVALID_ARGUMENT`. So the API accepts `responseJsonSchema` and `thinkingLevel: LOW` as valid request fields.
-- Every `generateContent` call (and one Interactions probe) returns **HTTP 402**: "Your prepayment credits are depleted". No model answer has been obtained, so it is still unproven that the model honours the schema at generation time.
+- With the first key, every `generateContent` call (and one Interactions probe) returned **HTTP 402**: "Your prepayment credits are depleted".
+- **Smoke check passed with a new key, 21:43–21:44 UTC.** API: `generateContent` `v1beta`. Model: `gemini-4-hydrogen` (`modelVersion` `gemini-4-hydrogen`). Config: `responseMimeType` + `responseJsonSchema`, `thinkingLevel: LOW`. Synthetic fixture input. Results:
+  - `trial-recurring`: `interpreted` (recurring, 100 USD cents upfront, 4995 per month, 7-day trial, evidence clear), responseId `e4T3arCuJ5OvxN8PvZvIkQ0`.
+  - `one-off-usd1`: `interpreted` (one_off, two verbatim quotes), responseId `h4T3atu6H9Pi7M8P78W4iQ0`.
+  - `missing-terms`: `clarify` / `EVIDENCE_MISSING`, the expected cautious outcome, responseId `iYT3as7nPNqK7M8PlZjWwAk`.
 
-Task 3 acceptance criterion 1 stays open until `npm run smoke:gemini` prints `PASS` after the project's prepaid credit is topped up.
+  Each result is one live sample (Hydrogen ignores sampling parameters). It shows that the integration works, not how accurate the model is; task 8 measures that.
 
 ## One coherent stack
 
