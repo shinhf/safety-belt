@@ -53,6 +53,7 @@ test('request goes to the fixed endpoint with only public merchant name and disc
   assert.equal(init.method, 'POST');
   assert.equal(init.headers['x-goog-api-key'], KEY);
   assert.ok(init.signal instanceof AbortSignal, 'finite timeout signal');
+  assert.equal(init.redirect, 'error', 'the key header is never forwarded to a redirect target');
   const sent = JSON.parse(init.body);
   assert.deepEqual(Object.keys(sent).sort(), ['contents', 'generationConfig', 'systemInstruction']);
   assert.equal(sent.generationConfig.responseMimeType, 'application/json');
@@ -98,6 +99,7 @@ test('provider failures are unavailable with a sanitized code and never leak the
     ['oversized body', async () => new Response('x'.repeat(70_000) + 'secret-detail'), 'PROVIDER_BAD_RESPONSE'],
     ['timeout during body read', async () => new Response(new ReadableStream({ pull(c) { c.error(new DOMException('secret-detail', 'TimeoutError')); } })), 'PROVIDER_TIMEOUT'],
     ['non-JSON 200', async () => new Response('<html>secret-detail</html>', { status: 200 }), 'PROVIDER_BAD_RESPONSE'],
+    ['endless stream, no content-length', async () => new Response(new ReadableStream({ pull(c) { c.enqueue(new Uint8Array(16_384)); } })), 'PROVIDER_BAD_RESPONSE'],
   ];
   for (const [name, fetch, code] of cases) {
     const svc = await service(t, { fetch: mock.fn(fetch) });

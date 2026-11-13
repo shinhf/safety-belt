@@ -64,8 +64,8 @@ export function decide(intent, snapshot, check) {
 export function evaluate(session, check) {
   const { intent, checkout } = session;
   const decision = decide(intent, checkout, check);
+  session.grants.clear(); // every evaluation supersedes earlier grants, so a later non-ALLOW revokes them
   if (decision.decision !== 'ALLOW') return { decision, grantId: null };
-  session.grants.clear(); // at most one live grant: a new evaluation supersedes any earlier one
   const grantId = randomBytes(32).toString('base64url');
   session.grants.set(grantId, deepFreeze({
     intentId: intent.intentId,

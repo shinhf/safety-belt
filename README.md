@@ -2,7 +2,7 @@
 
 Safety Belt pauses a supported desktop-browser checkout when its disclosed billing commitment conflicts with the user's explicitly approved intent, while preserving legitimate task completion.
 
-**Status:** implementation backlog only; the application has not been built or tested.
+**Status:** tasks 1–4 implemented (checkout fixture, intent confirmation, Gemini interpretation, policy and grants); submission gate, pause explanation, browser tests and live-model evaluation (tasks 5–8) are open. The live Gemini smoke check has not passed yet.
 
 ## MVP: one PDF, one payment
 
@@ -25,7 +25,7 @@ No database, cloud deployment, browser extension, OCR, GPU/NPU pipeline, account
 
 See the [ordered implementation backlog](docs/mvp-backlog.md) for tasks, acceptance criteria, dependencies and the Definition of Done. See [technical decisions and source reconciliation](docs/technical-decisions.md) for the shared contract and evidence.
 
-The repository contains planning artifacts only. Model credentials and a live provider smoke check are implementation prerequisites; no working integration or measured prevention result is claimed.
+Tests use labelled replay responses, not the live provider. No live-model integration or measured prevention result is claimed until the smoke check (task 3) and evaluation (task 8) pass.
 
 ## Run
 

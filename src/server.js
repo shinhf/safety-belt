@@ -18,7 +18,7 @@ const BODY_LIMIT = 4096;
 const INTENT_FIELDS = ['documentId', 'merchantId', 'currency', 'capCents', 'billingScope', 'confirmed'];
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
-  'Content-Security-Policy': "default-src 'self'",
+  'Content-Security-Policy': "default-src 'self'; frame-ancestors 'none'",
   'Cache-Control': 'no-store',
 };
 
@@ -109,6 +109,7 @@ export function startServer({ port = 3000, gemini } = {}) {
             return send(res, 200, { check: { ...check, status: 'stale', reasons: ['STALE'], interpretation: null } });
           }
           session.checks.clear(); // only the current state's check is ever readable
+          session.grants.clear(); // a grant must never outlive the interpretation it was decided on
           session.checks.set(key, check);
           return send(res, 200, { check });
         }

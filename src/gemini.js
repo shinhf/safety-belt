@@ -36,6 +36,18 @@ export const generationConfig = () => ({
 const isTimeout = (err) => err?.name === 'TimeoutError' || err?.name === 'AbortError';
 const unavailable = (code) => ({ status: 'unavailable', reasons: [code], interpretation: null, provider: null });
 
+// Reads at most `limit` bytes; stops and cancels the stream as soon as it is exceeded. Returns null when too large.
+async function readLimited(res, limit) {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of res.body ?? []) {
+    size += chunk.length;
+    if (size > limit) return null; // leaving the loop early cancels the stream
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
 async function callModel({ apiKey, fetch }, input) {
   let res;
   try {
@@ -48,6 +60,7 @@ async function callModel({ apiKey, fetch }, input) {
         generationConfig: generationConfig(),
       }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
+      redirect: 'error', // the key is a custom header that fetch would forward to any redirect target
     });
   } catch (err) {
     return unavailable(isTimeout(err) ? 'PROVIDER_TIMEOUT' : 'PROVIDER_NETWORK');
@@ -61,8 +74,8 @@ async function callModel({ apiKey, fetch }, input) {
 
   let body;
   try {
-    const text = await res.text(); // still bounded in time by the request's abort signal
-    if (text.length > MAX_RESPONSE_CHARS) return unavailable('PROVIDER_BAD_RESPONSE');
+    const text = await readLimited(res, MAX_RESPONSE_CHARS); // bounded in size here and in time by the abort signal
+    if (text === null) return unavailable('PROVIDER_BAD_RESPONSE');
     body = JSON.parse(text);
   } catch (err) { return unavailable(isTimeout(err) ? 'PROVIDER_TIMEOUT' : 'PROVIDER_BAD_RESPONSE'); }
 

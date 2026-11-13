@@ -169,4 +169,10 @@ test('state changes revoke grants already issued', () => {
   evaluate(s, interpreted(s));
   reset(s);
   assert.equal(s.grants.size, 0, 'reset');
+
+  const fresh = setup();
+  evaluate(fresh, interpreted(fresh));
+  const failed = { ...interpreted(fresh), status: 'unavailable', reasons: ['PROVIDER_HTTP_429'], interpretation: null };
+  assert.equal(evaluate(fresh, failed).grantId, null);
+  assert.equal(fresh.grants.size, 0, 'a later non-ALLOW on the same state revokes the earlier grant');
 });

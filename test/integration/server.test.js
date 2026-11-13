@@ -29,6 +29,7 @@ test('serves index.html when present, with security headers', async () => {
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-type'), /text\/html/);
   assert.equal(res.headers.get('x-content-type-options'), 'nosniff');
+  assert.match(res.headers.get('content-security-policy'), /frame-ancestors 'none'/, 'page cannot be framed (clickjacking)');
   assert.equal(res.headers.get('access-control-allow-origin'), null);
 });
 

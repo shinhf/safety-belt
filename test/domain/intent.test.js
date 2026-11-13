@@ -33,6 +33,7 @@ test('invalid input is rejected with a stable code and keeps the previous intent
     [{ capCents: 1.5 }, 'INVALID_INTENT'],
     [{ capCents: '200' }, 'INVALID_INTENT'],
     [{ capCents: Number.MAX_SAFE_INTEGER + 1 }, 'INVALID_INTENT'],
+    [{ capCents: 100_000_000 }, 'INVALID_INTENT'],
     [{ capCents: undefined }, 'INVALID_INTENT'],
     [{ billingScope: 'recurring' }, 'INVALID_INTENT'],
     [{ merchantId: 'docuquick-demo' }, 'INVALID_INTENT'],
