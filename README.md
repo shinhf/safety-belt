@@ -16,7 +16,7 @@ Use synthetic documents and payment state. Conversion is a simulated completion 
 
 - **Node.js 24 LTS and npm:** one local JavaScript service using built-in HTTP, fetch, crypto and test modules; in-memory state.
 - **HTML, CSS and vanilla JavaScript:** one desktop-browser flow, served by the same service; no frontend build framework.
-- **Gemini 3.8 Flash via REST with JSON Schema:** one semantic interpreter of disclosed billing wording; service-side key and validation. It cannot authorize actions.
+- **Gemini 4 Hydrogen via REST with JSON Schema:** one semantic interpreter of disclosed billing wording; service-side key and validation. It cannot authorize actions.
 - **Playwright Test with Chromium:** focused browser verification of the supported checkout boundary.
 
 No database, cloud deployment, browser extension, OCR, GPU/NPU pipeline, account system, real merchant integration, live payment or subscription enrollment is in scope. The demonstrable claim applies only to this owned checkout and its disclosed terms.

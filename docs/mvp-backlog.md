@@ -16,12 +16,12 @@ Verified resources: [private repository](https://github.com/shinhf/safety-belt) 
 |---|---|---|---|---|---|
 | 1 | [Build the owned checkout fixture and observable simulation state](https://github.com/shinhf/safety-belt/issues/1) | P0 | M | None | Node.js 24, npm, HTML/CSS/JavaScript |
 | 2 | [Capture independent one-off intent and invalidate changed approval](https://github.com/shinhf/safety-belt/issues/2) | P0 | S | 1 | Node.js 24, HTML/JavaScript |
-| 3 | [Interpret disclosed billing terms with one validated Gemini call](https://github.com/shinhf/safety-belt/issues/3) | P0 | M | 1 | Node.js fetch, Gemini 3.8 Flash REST, JSON Schema |
+| 3 | [Interpret disclosed billing terms with one validated Gemini call](https://github.com/shinhf/safety-belt/issues/3) | P0 | M | 1 | Node.js fetch, Gemini 4 Hydrogen REST, JSON Schema |
 | 4 | [Enforce intent with deterministic policy and bound execution grants](https://github.com/shinhf/safety-belt/issues/4) | P0 | M | 2, 3 | Node.js, node:crypto, node:test |
 | 5 | [Gate every submit path with atomic current-state and replay checks](https://github.com/shinhf/safety-belt/issues/5) | P0 | M | 4 | Node.js HTTP, node:test, Browser form events |
 | 6 | [Explain paused commitments and recover to the one-off completion path](https://github.com/shinhf/safety-belt/issues/6) | P0 | S | 5 | HTML/CSS/JavaScript, Node.js API |
 | 7 | [Verify browser enforcement, failure handling and privacy boundaries](https://github.com/shinhf/safety-belt/issues/7) | P0 | M | 6 | Playwright Test, Chromium, node:test, npm |
-| 8 | [Measure the live model on billing paraphrases and rehearse the MVP demo](https://github.com/shinhf/safety-belt/issues/8) | P0 | S | 7 | Gemini REST, Node.js, Chromium |
+| 8 | [Measure the live model on billing paraphrases and rehearse the MVP demo](https://github.com/shinhf/safety-belt/issues/8) | P0 | S | 7 | Gemini 4 Hydrogen REST, Node.js, Chromium |
 
 <a id="task-1"></a>
 
@@ -82,7 +82,7 @@ Shared contract and scope: [technical decisions](https://github.com/shinhf/safet
 
 ## 3. Interpret disclosed billing terms with one validated Gemini call
 
-Implement one service-side Gemini 3.8 Flash REST adapter using structured JSON output, the official supported API revision, and the fixed interpretation contract. Extract actual disclosure semantics and supporting text; keep authorization entirely outside the model.
+Implement one service-side Gemini 4 Hydrogen REST adapter using structured JSON output, the official supported API revision, and the fixed interpretation contract. Extract actual disclosure semantics and supporting text; keep authorization entirely outside the model.
 
 ## Business value
 
@@ -90,7 +90,7 @@ Makes the intervention understand varied billing wording instead of depending on
 
 ## Acceptance criteria
 
-- [ ] Run and record one synthetic live-provider smoke check using the configured key/model/API revision before claiming integration. Pin gemini-3.8-flash and the verified revision; a missing key produces a clear unavailable state and cannot allow.
+- [ ] Run and record one synthetic live-provider smoke check using the configured key/model/API revision before claiming integration. Pin gemini-4-hydrogen and the verified revision; a missing key produces a clear unavailable state and cannot allow.
 - [ ] Send only the public merchant display name and exact snapshot disclosure text plus fixed extraction instructions/schema. Never send intent, hidden execution fields, expected labels, document contents, card or personal data.
 - [ ] Return upfront integer cents/currency, merchant, billing kind, renewal amount/interval, trial duration, evidence status and supporting quotations. Require explicit evidence of one-off billing; no recurring keyword is not enough.
 - [ ] Validate required and conditional fields, enums, integers/nullability and quotation provenance locally. Reject extra/unsupported fields, malformed JSON, contradictory/missing/uncertain evidence and an interpretation inconsistent with the fixture commitment as CLARIFY.
@@ -102,7 +102,7 @@ Makes the intervention understand varied billing wording instead of depending on
 - Priority: **P0**
 - Estimate: **M**
 - Depends on: Task 1
-- Technologies: Node.js fetch, Gemini 3.8 Flash REST, JSON Schema
+- Technologies: Node.js fetch, Gemini 4 Hydrogen REST, JSON Schema
 
 Shared contract and scope: [technical decisions](https://github.com/shinhf/safety-belt/blob/main/docs/technical-decisions.md). All side effects are simulated; this issue does not authorize live transactions or deployment.
 
@@ -232,7 +232,7 @@ Demonstrates the business outcome with an actual interpreter while keeping model
 ## Acceptance criteria
 
 - [ ] Prepare at least eight fixed synthetic cases before viewing model answers: two explicit one-off phrasings, three renewal phrasings (including introductory access, renews automatically and billed each month), one missing, one contradictory and one unsupported disclosure. Assign expected material fields/evidence class independently; never send labels to the model.
-- [ ] Run the selected live model with the same prompt/schema as the application. Save synthetic inputs, expected vs actual fields/class, provider/model/API revision, failures and abstentions; report raw counts without claiming broad accuracy.
+- [ ] Run gemini-4-hydrogen live with the same prompt/schema as the application. Save synthetic inputs, expected vs actual fields/class, provider/model/API revision, failures and abstentions; report raw counts without claiming broad accuracy.
 - [ ] Core one-off and three recurring phrasings meet their expected classification/material fields, and unclear/contradictory/unsupported cases do not authorize. Record all initial failures; fix and rerun before closing if these core cases fail. Do not suppress errors or substitute replay as live evidence.
 - [ ] Rehearse roughly two minutes: independently approve intent; attempt recurring checkout and observe zero effects; return to explicit USD 1 one-off and complete once; reset and inject a post-check change, then reject stale approval. Show state records/counters for each result.
 - [ ] The walkthrough and brief README instructions identify the owned checkout, synthetic data, simulated payment/conversion, injected mutation and any replay. Missing provider access leaves this live-model acceptance criterion open rather than claiming success.
@@ -243,7 +243,7 @@ Demonstrates the business outcome with an actual interpreter while keeping model
 - Priority: **P0**
 - Estimate: **S**
 - Depends on: Task 7
-- Technologies: Gemini REST, Node.js, Chromium
+- Technologies: Gemini 4 Hydrogen REST, Node.js, Chromium
 
 Shared contract and scope: [technical decisions](https://github.com/shinhf/safety-belt/blob/main/docs/technical-decisions.md). All side effects are simulated; this issue does not authorize live transactions or deployment.
 

@@ -14,13 +14,15 @@ Planning decision: 13 November 2026. This backlog selects the saved PDF-checkout
 
 Consumer complaints motivate the saved scenario but are not reverified here. No assertion of proven fraud, a desktop victim or an actual last-second transaction swap is made. Prices, merchant, seven-day trial and injected state changes are fictional fixture choices.
 
+The selected interpreter is **Gemini 4 Hydrogen (`gemini-4-hydrogen`)**, updated at the user's request. This supersedes the initial Flash selection. The provider smoke check and independent evaluation remain required; no account-specific model access or quality improvement has been measured.
+
 ## One coherent stack
 
 | Technology | Purpose and simplest suitable choice | Already in this project? |
 |---|---|---|
 | Node.js 24 LTS + npm; built-in `node:http`, `fetch`, `node:crypto`, `node:test` | One loopback service, model request, opaque grant IDs and policy/API checks in one language. No runtime framework or SDK dependency is needed for a few fixed routes. Pin a supported patched 24.x release at setup. [Release status](https://nodejs.org/en/about/previous-releases), [fetch](https://nodejs.org/api/globals.html#fetch), [test runner](https://nodejs.org/api/test.html). | No application/runtime configuration exists. Newly selected. |
 | HTML/CSS/vanilla JavaScript | One same-origin desktop flow with native form submission and safe text rendering. No SPA framework, bundler or design system needed. | New. |
-| Gemini 3.8 Flash, REST, JSON Schema | Extract billing semantics in one request, then validate locally. [Model documentation](https://aistudio.google.com/docs/models/gemini-3.8-flash) lists structured outputs; [REST structured-output documentation](https://aistudio.google.com/docs/structured-output) supplies the request pattern. Pin the model ID and API revision used by the smoke check. | Gemini is mentioned in historical research; no integration or verified credential exists. |
+| Gemini 4 Hydrogen, REST, JSON Schema | Extract billing semantics in one request, then validate locally. [Official structured-output documentation](https://aistudio.google.com/docs/structured-output) demonstrates `gemini-4-hydrogen` with REST and JSON Schema. Pin the model ID and API revision used by the smoke check. | Gemini is mentioned in historical research; no integration or verified credential exists. |
 | Playwright Test + Chromium (development only) | Verify click/Enter submission, term mutation and visible outcomes in an actual browser. [Local server support](https://playwright.dev/docs/test-webserver) avoids a deployment prerequisite. | Mentioned in historical research; no tests/configuration exist. |
 
 Official documentation was consulted for capability selection, not as proof that account-specific model access works. Task 3 must establish that before the live demonstration. A missing key/provider failure must pause the flow; recorded responses may support offline tests but must be labeled and do not satisfy the live-model Definition of Done. No provider SDK, schema library or second model is planned; use an explicit validator for this small fixed response contract.
