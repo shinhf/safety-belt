@@ -99,6 +99,7 @@ export function createSession() {
 
 export function selectVariant(session, variantId) {
   session.checkout = buildSnapshot(variantId);
+  session.grants.clear(); // a changed snapshot invalidates every grant
   return session.checkout;
 }
 
