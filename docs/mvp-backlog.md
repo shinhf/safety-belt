@@ -4,7 +4,7 @@ Business goal: complete a useful one-document task within explicit one-off payme
 
 Target: one fictional desktop checkout, Paperlane Demo; approve one conversion, USD 2 maximum, one payment, no subscription. Journey: synthetic document → separate intent confirmation → checkout interpretation → deterministic policy → current-state submission gate → explain the pause or complete one simulated conversion/payment.
 
-All eight issues are P0. Optional P1 work is deliberately excluded from the active board: subscription enrollment/fresh recurring consent, browser extension/third-party checkout integration, multiple merchants, actual PDF processing, persistence, deployment and visual polish. No live payments, real documents, OS-wide protection, OCR, GPU/NPU stack, banking integration or hidden-charge detection is included.
+All ten issues are P0. Optional P1 work is deliberately excluded from the active board: subscription enrollment/fresh recurring consent, browser extension/third-party checkout integration, multiple merchants, actual PDF processing, persistence, deployment and visual polish. No live payments, real documents, OS-wide protection, OCR, GPU/NPU stack, banking integration or hidden-charge detection is included.
 
 See [technical decisions](technical-decisions.md) for source reconciliation, stack rationale, data contracts, security and the exact execution boundary. Acceptance criteria below are requirements for future implementation, not claims of passing checks. S/M estimates are relative, not a promise to fit the historical 3–4-hour sketch.
 
@@ -21,7 +21,9 @@ Verified resources: [private repository](https://github.com/shinhf/safety-belt) 
 | 5 | [Gate every submit path with atomic current-state and replay checks](https://github.com/shinhf/safety-belt/issues/5) | P0 | M | 4 | Node.js HTTP, node:test, Browser form events |
 | 6 | [Explain paused commitments and recover to the one-off completion path](https://github.com/shinhf/safety-belt/issues/6) | P0 | S | 5 | HTML/CSS/JavaScript, Node.js API |
 | 7 | [Verify browser enforcement, failure handling and privacy boundaries](https://github.com/shinhf/safety-belt/issues/7) | P0 | M | 6 | Playwright Test, Chromium, node:test, npm |
-| 8 | [Measure the live model on billing paraphrases and rehearse the MVP demo](https://github.com/shinhf/safety-belt/issues/8) | P0 | S | 7 | Gemini 4 Hydrogen REST, Node.js, Chromium |
+| 8 | [Measure the live model on billing paraphrases](https://github.com/shinhf/safety-belt/issues/8) | P0 | S | 7 | Gemini 4 Hydrogen REST, Node.js |
+| 9 | [Rehearse the MVP demo on Linux](https://github.com/shinhf/safety-belt/issues/9) | P0 | S | 7, 8 | Node.js 24, Gemini 4 Hydrogen REST, Chromium, Linux |
+| 10 | [Rehearse the MVP demo on Windows](https://github.com/shinhf/safety-belt/issues/10) | P0 | S | 7, 8, 9 | Node.js 24 for Windows, PowerShell, Gemini 4 Hydrogen REST, Chromium |
 
 <a id="task-1"></a>
 
@@ -221,29 +223,108 @@ Shared contract and scope: [technical decisions](https://github.com/shinhf/safet
 
 <a id="task-8"></a>
 
-## 8. Measure the live model on billing paraphrases and rehearse the MVP demo
+## 8. Measure the live model on billing paraphrases
 
-Run a compact independently labeled disclosure set and the real end-to-end demo. Record provider/model revision, actual failures/abstentions and service execution outcomes, then add only the run instructions and short demo script needed to reproduce them.
+Run a compact, independently labelled disclosure set against the live model. Record the provider and model revision, actual failures and abstentions, and the run instructions needed to reproduce it. The demo rehearsal is split into tasks 9 (Linux) and 10 (Windows).
 
 ## Business value
 
-Demonstrates the business outcome with an actual interpreter while keeping model evidence and protection claims honest.
+Shows how the actual interpreter handles varied billing wording, while keeping model evidence honest.
 
 ## Acceptance criteria
 
 - [ ] Prepare at least eight fixed synthetic cases before viewing model answers: two explicit one-off phrasings, three renewal phrasings (including introductory access, renews automatically and billed each month), one missing, one contradictory and one unsupported disclosure. Assign expected material fields/evidence class independently; never send labels to the model.
 - [ ] Run gemini-4-hydrogen live with the same prompt/schema as the application. Save synthetic inputs, expected vs actual fields/class, provider/model/API revision, failures and abstentions; report raw counts without claiming broad accuracy.
 - [ ] Core one-off and three recurring phrasings meet their expected classification/material fields, and unclear/contradictory/unsupported cases do not authorize. Record all initial failures; fix and rerun before closing if these core cases fail. Do not suppress errors or substitute replay as live evidence.
-- [ ] Rehearse roughly two minutes: independently approve intent; attempt recurring checkout and observe zero effects; return to explicit USD 1 one-off and complete once; reset and inject a post-check change, then reject stale approval. Show state records/counters for each result.
-- [ ] The walkthrough and brief README instructions identify the owned checkout, synthetic data, simulated payment/conversion, injected mutation and any replay. Missing provider access leaves this live-model acceptance criterion open rather than claiming success.
-- [ ] All deterministic checks from task 7 pass and observed live demo results satisfy the Definition of Done. No claim of third-party interception, hidden-charge detection or measured fraud prevention appears.
+- [ ] Brief README instructions for `npm run eval:gemini` identify the synthetic cases, the live-only run and the record format. Missing provider access or quota leaves the live criterion open rather than claiming success.
+- [ ] No claim of broad model accuracy, third-party interception, hidden-charge detection or measured fraud prevention appears in the eval reporting.
 
 ## Delivery
 
 - Priority: **P0**
 - Estimate: **S**
 - Depends on: Task 7
-- Technologies: Gemini 4 Hydrogen REST, Node.js, Chromium
+- Technologies: Gemini 4 Hydrogen REST, Node.js
+
+Shared contract and scope: [technical decisions](https://github.com/shinhf/safety-belt/blob/main/docs/technical-decisions.md). All side effects are simulated; this issue does not authorize live transactions or deployment.
+
+<a id="task-9"></a>
+
+## 9. Rehearse the MVP demo on Linux
+
+Rehearse the MVP demo end to end on a Linux host and write the README demo script.
+
+## Business value
+
+Shows the business outcome with the actual interpreter, on the platform the project is developed on, using steps anyone can repeat.
+
+## Acceptance criteria
+
+- [ ] Rehearse a walkthrough of about two minutes in the real UI with the live model:
+  - approve the intent separately, in Safety Belt;
+  - try the recurring checkout and see zero payment, subscription or conversion effects;
+  - go back to the explicit USD 1 one-off and complete it once;
+  - reset, inject a change after the check, and see the stale approval rejected.
+  - Show the state records and counters for each result.
+- [ ] The walkthrough and the README demo instructions name:
+  - the owned checkout and the fictional merchant;
+  - the synthetic data;
+  - the simulated payment and conversion;
+  - the injected mutation;
+  - whether the terms check is live or replay.
+  Missing provider access leaves the live part open; it is never shown as a success.
+- [ ] `npm run test:all` (node:test + Playwright Chromium) passes on this host before the rehearsal. The observed demo results satisfy the Definition of Done.
+- [ ] No claim of third-party interception, hidden-charge detection or measured fraud prevention appears.
+- [ ] Record the host: OS and version, Node version, Chromium/Playwright version, the date, and the model `responseId`s from the run.
+- [ ] README: a short "Run the demo" section with Linux/bash commands: `npm ci`, `npx playwright install chromium` if it is missing, `cp .env.example .env`, `npm run smoke:gemini` and `npm start`. Add the demo script, about 8 steps.
+
+## Delivery
+
+- Priority: **P0**
+- Estimate: **S**
+- Depends on: Tasks 7 and 8
+- Technologies: Node.js 24, Gemini 4 Hydrogen REST, Chromium, Linux
+
+Shared contract and scope: [technical decisions](https://github.com/shinhf/safety-belt/blob/main/docs/technical-decisions.md). All side effects are simulated; this issue does not authorize live transactions or deployment.
+
+<a id="task-10"></a>
+
+## 10. Rehearse the MVP demo on Windows
+
+Rehearse the MVP demo end to end on a Windows host. This is the first real check of constraint TC13: Windows and Linux are both supported hosts, and Windows has not been verified yet.
+
+## Business value
+
+Shows that the demo and its checks run unchanged on Windows, as TC13 promises.
+
+## Acceptance criteria
+
+- [ ] Rehearse a walkthrough of about two minutes in the real UI with the live model:
+  - approve the intent separately, in Safety Belt;
+  - try the recurring checkout and see zero payment, subscription or conversion effects;
+  - go back to the explicit USD 1 one-off and complete it once;
+  - reset, inject a change after the check, and see the stale approval rejected.
+  - Show the state records and counters for each result.
+- [ ] The walkthrough and the README demo instructions name:
+  - the owned checkout and the fictional merchant;
+  - the synthetic data;
+  - the simulated payment and conversion;
+  - the injected mutation;
+  - whether the terms check is live or replay.
+  Missing provider access leaves the live part open; it is never shown as a success.
+- [ ] `npm run test:all` (node:test + Playwright Chromium) passes on this host before the rehearsal. The observed demo results satisfy the Definition of Done.
+- [ ] No claim of third-party interception, hidden-charge detection or measured fraud prevention appears.
+- [ ] Record the host: OS and version, Node version, Chromium/Playwright version, the date, and the model `responseId`s from the run.
+- [ ] Run natively on Windows (PowerShell, Node 24 for Windows), not in WSL: `npm ci`, `npx playwright install chromium`, `.env` loaded through `--env-file-if-exists`, `npm run test:all`, `npm run smoke:gemini` and `npm start`.
+- [ ] Every Windows-only failure (paths, line endings, scripts, child processes, file names) is fixed in shared code, with a test, without breaking Linux. If none are found, record that.
+- [ ] README: add the PowerShell equivalents next to the Linux commands from task 9.
+
+## Delivery
+
+- Priority: **P0**
+- Estimate: **S**
+- Depends on: Tasks 7, 8 and 9
+- Technologies: Node.js 24 for Windows, PowerShell, Gemini 4 Hydrogen REST, Chromium
 
 Shared contract and scope: [technical decisions](https://github.com/shinhf/safety-belt/blob/main/docs/technical-decisions.md). All side effects are simulated; this issue does not authorize live transactions or deployment.
 
@@ -255,5 +336,5 @@ Shared contract and scope: [technical decisions](https://github.com/shinhf/safet
 - [ ] Material changes, late model responses, button/Enter/direct-API paths and replay cannot execute stale approval or duplicate payment.
 - [ ] Review terms grants nothing; returning to the one-off flow allows safe completion after a current check.
 - [ ] Only public disclosure/merchant text reaches the model; credentials and synthetic document/payment state stay outside provider payloads and served assets.
-- [ ] Deterministic browser/API checks pass, the independently labeled live-model set meets task 8's criteria, and the live demonstration records actual execution-state outcomes.
+- [ ] Deterministic browser/API checks pass, the independently labeled live-model set meets task 8's criteria, and the live demonstrations (tasks 9 and 10) record actual execution-state outcomes.
 - [ ] Run instructions and demo labels reproduce the owned-checkout claim accurately. No real payment, subscription enrollment, deployment or application implementation has occurred as part of backlog preparation.
