@@ -30,7 +30,7 @@
         <label for="cap">Maximum charge (USD)</label>
         <input id="cap" type="text" inputmode="decimal" autocomplete="off" value="2.00">
         <label class="check"><input id="approve" type="checkbox" required> I approve one conversion of this document at Paperlane Demo, up to this amount, one-off only</label>
-        <button type="submit">Confirm approval</button>
+        <button id="confirm" type="submit" disabled>Confirm approval</button>
       </form>
       <p id="intent-message" role="alert"></p>
     </section>
@@ -39,7 +39,7 @@
       <p id="approved-scope" class="scope" role="status"></p>
       <h2 id="checkout-h">Checkout</h2>
       <label for="variant">Checkout variant</label>
-      <select id="variant"></select>
+      <select id="variant" disabled></select>
       <dl>
         <dt>Merchant</dt><dd id="merchant"></dd>
         <dt>Revision</dt><dd id="revision"></dd>
@@ -47,7 +47,7 @@
       <h3>Disclosure</h3>
       <p id="disclosure" class="disclosure"></p>
       <form id="pay-form">
-        <button id="pay" type="submit">Pay and convert</button>
+        <button id="pay" type="submit" disabled>Pay and convert</button>
       </form>
       <p id="message" role="status" aria-live="polite"></p>
     </section>

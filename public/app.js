@@ -231,6 +231,9 @@ async function init() {
     await api('/api/reset', {});
     await refresh();
   });
+
+  // Controls start disabled in the markup, so nothing can submit natively before these handlers exist.
+  for (const id of ['confirm', 'variant', 'pay']) $(id).disabled = false;
 }
 
 init();
