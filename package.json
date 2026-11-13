@@ -11,7 +11,8 @@
     "test:e2e": "playwright test",
     "test:all": "node scripts/test-all.js",
     "smoke:gemini": "node --env-file-if-exists=.env scripts/smoke-gemini.js",
-    "eval:gemini": "node --env-file-if-exists=.env scripts/eval-gemini.js"
+    "eval:gemini": "node --env-file-if-exists=.env scripts/eval-gemini.js",
+    "demo:record": "playwright test --config playwright.live.config.js"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1"
