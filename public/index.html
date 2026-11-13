@@ -15,7 +15,25 @@
       <p class="card">synthetic-report.pdf — synthetic, no upload</p>
     </section>
 
+    <section class="belt" aria-labelledby="belt-h">
+      <h2 id="belt-h">Safety Belt — confirm what you approve</h2>
+      <p class="belt-note">This is Safety Belt, not the merchant page. Only this form records your approval.</p>
+      <dl>
+        <dt>Document</dt><dd>synthetic-report.pdf (convert one document)</dd>
+        <dt>Merchant</dt><dd>Paperlane Demo</dd>
+        <dt>Billing</dt><dd>One-off only — no subscriptions or recurring charges</dd>
+      </dl>
+      <form id="intent-form" novalidate>
+        <label for="cap">Maximum charge (USD)</label>
+        <input id="cap" type="text" inputmode="decimal" autocomplete="off" value="2.00">
+        <label class="check"><input id="approve" type="checkbox" required> I approve one conversion of this document at Paperlane Demo, up to this amount, one-off only</label>
+        <button type="submit">Confirm approval</button>
+      </form>
+      <p id="intent-message" role="alert"></p>
+    </section>
+
     <section aria-labelledby="checkout-h">
+      <p id="approved-scope" class="scope" role="status"></p>
       <h2 id="checkout-h">Checkout</h2>
       <label for="variant">Checkout variant</label>
       <select id="variant"></select>

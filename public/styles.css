@@ -13,3 +13,11 @@ label { display: block; font-weight: 600; margin-bottom: .25rem; }
 select, button { font: inherit; padding: .4rem .8rem; }
 button:focus-visible, select:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
 #message { color: #a00; font-weight: 600; min-height: 1.5em; }
+.belt { background: #eaf2fc; border: 3px solid #1a5fb4; }
+.belt h2 { color: #1a5fb4; }
+.belt-note { font-style: italic; }
+.belt input[type="text"] { font: inherit; padding: .4rem; margin-bottom: .75rem; }
+.belt .check { display: flex; gap: .5rem; align-items: flex-start; font-weight: 400; margin-bottom: .75rem; }
+input:focus-visible { outline: 3px solid #1a5fb4; outline-offset: 2px; }
+#intent-message { color: #a00; font-weight: 600; min-height: 1.5em; }
+.scope { margin-top: 0; padding: .5rem .75rem; background: #eaf2fc; border-left: 4px solid #1a5fb4; font-weight: 600; }

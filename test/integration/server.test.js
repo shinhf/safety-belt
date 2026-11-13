@@ -95,3 +95,46 @@ test('reset zeroes outcomes', async () => {
   assert.equal(state.outcomes.attemptedSubmissions, 0);
   assert.equal(state.outcomes.conversionStatus, 'not_started');
 });
+
+const INTENT = {
+  documentId: 'doc-synthetic-001', merchantId: 'paperlane-demo', currency: 'USD', capCents: 200, billingScope: 'one_off_only', confirmed: true,
+};
+const getState = async () => (await fetch(url + '/api/state')).json();
+
+test('intent is confirmed only via POST /api/intent and survives invalid edits', async () => {
+  await post('/api/reset', {});
+  assert.equal((await getState()).intent, null);
+
+  const res = await post('/api/intent', INTENT);
+  assert.equal(res.status, 200);
+  const { intent } = await res.json();
+  assert.equal(intent.capCents, 200);
+  assert.equal(intent.billingScope, 'one_off_only');
+  assert.equal(intent.action, 'convert-one-document');
+  assert.deepEqual((await getState()).intent, intent);
+
+  const again = (await (await post('/api/intent', { ...INTENT, capCents: 150 })).json()).intent;
+  assert.equal(again.intentId, intent.intentId);
+  assert.ok(again.revision > intent.revision);
+
+  const bad = await post('/api/intent', { ...INTENT, billingScope: 'recurring' });
+  assert.equal(bad.status, 400);
+  assert.deepEqual(await bad.json(), { error: 'INVALID_INTENT' });
+  assert.deepEqual(await (await post('/api/intent', { ...INTENT, confirmed: false })).json(), { error: 'INTENT_NOT_CONFIRMED' });
+  assert.equal((await post('/api/intent', { ...INTENT, extra: 1 })).status, 400);
+  assert.deepEqual((await getState()).intent, again);
+
+  assert.equal((await post('/api/checkout', { variantId: 'trial-recurring', capCents: 500 })).status, 400);
+  assert.equal((await post('/api/checkout', { variantId: 'trial-recurring' })).status, 200);
+  assert.deepEqual((await getState()).intent, again);
+
+  const reset = await (await post('/api/reset', {})).json();
+  assert.equal(reset.intent, null);
+  assert.equal((await getState()).intent, null);
+});
+
+test('rejects cross-origin POST /api/intent', async () => {
+  await post('/api/reset', {});
+  assert.equal((await post('/api/intent', INTENT, { Origin: 'http://evil.example' })).status, 403);
+  assert.equal((await getState()).intent, null);
+});

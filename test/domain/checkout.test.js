@@ -29,14 +29,15 @@ test('publicSnapshot omits commitment and hidden labels', () => {
   assert.equal(pub.disclosure, 'USD 1 today. Free 7-day trial, then USD 49.95 per month until cancelled.');
 });
 
-test('reset zeroes outcomes and clears intents/checks/grants', () => {
+test('reset zeroes outcomes and clears intent/checks/grants', () => {
   const s = createSession();
   recordAttempt(s);
   s.grants.set('g', {});
   selectVariant(s, 'non-usd');
   reset(s);
   assert.deepEqual(outcomeView(s), { attemptedSubmissions: 0, executions: 0, payments: [], subscriptions: [], conversionStatus: 'not_started' });
-  assert.equal(s.grants.size + s.intents.size + s.checks.size, 0);
+  assert.equal(s.grants.size + s.checks.size, 0);
+  assert.equal(s.intent, null);
   assert.equal(s.checkout.variantId, 'one-off-usd1');
 });
 

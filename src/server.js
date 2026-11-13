@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import {
   createSession, selectVariant, publicSnapshot, outcomeView, recordAttempt, reset, variantList,
 } from './domain/checkout.js';
+import { confirmIntent, intentView } from './domain/intent.js';
 
 const PUBLIC = new URL('../public/', import.meta.url);
 // Fixed allowlist: URL paths are never joined onto the filesystem.
@@ -12,6 +13,7 @@ const STATIC = {
   '/styles.css': ['styles.css', 'text/css; charset=utf-8'],
 };
 const BODY_LIMIT = 4096;
+const INTENT_FIELDS = ['documentId', 'merchantId', 'currency', 'capCents', 'billingScope', 'confirmed'];
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'Content-Security-Policy': "default-src 'self'",
@@ -47,7 +49,7 @@ async function readJson(req, allowedKeys) {
 
 export function startServer({ port = 3000 } = {}) {
   const session = createSession();
-  const state = () => ({ checkout: publicSnapshot(session.checkout), outcomes: outcomeView(session), simulation: true });
+  const state = () => ({ checkout: publicSnapshot(session.checkout), outcomes: outcomeView(session), intent: intentView(session), simulation: true });
 
   const server = http.createServer(async (req, res) => {
     try {
@@ -65,7 +67,7 @@ export function startServer({ port = 3000 } = {}) {
       if (route === 'GET /api/variants') return send(res, 200, variantList());
       if (route === 'GET /api/state') return send(res, 200, state());
 
-      if (req.method === 'POST' && ['/api/checkout', '/api/reset', '/api/submit'].includes(path)) {
+      if (req.method === 'POST' && ['/api/checkout', '/api/intent', '/api/reset', '/api/submit'].includes(path)) {
         const origin = req.headers.origin;
         if (origin !== undefined && origin !== `http://${host}`) throw new HttpError(403, 'FORBIDDEN_ORIGIN');
         if (path === '/api/checkout') {
@@ -73,6 +75,11 @@ export function startServer({ port = 3000 } = {}) {
           if (typeof variantId !== 'string') throw new HttpError(400, 'INVALID_VARIANT');
           try { selectVariant(session, variantId); } catch { throw new HttpError(400, 'INVALID_VARIANT'); }
           return send(res, 200, { checkout: publicSnapshot(session.checkout) });
+        }
+        if (path === '/api/intent') {
+          const input = await readJson(req, INTENT_FIELDS);
+          try { confirmIntent(session, input); } catch (err) { throw new HttpError(400, err.code ?? 'INVALID_INTENT'); }
+          return send(res, 200, { intent: intentView(session) });
         }
         await readJson(req, []);
         if (path === '/api/reset') {

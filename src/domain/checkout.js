@@ -68,7 +68,7 @@ const CHECKOUT_ID = 'chk-paperlane-001';
 // Module-wide so revisions never repeat across resets (a stale grant can't match a new snapshot).
 let lastRevision = 0;
 
-function deepFreeze(o) {
+export function deepFreeze(o) {
   for (const v of Object.values(o)) if (v && typeof v === 'object') deepFreeze(v);
   return Object.freeze(o);
 }
@@ -91,7 +91,7 @@ export function createSession() {
   return {
     checkout: buildSnapshot(INITIAL_VARIANT),
     outcomes: { attemptedSubmissions: 0, executions: 0, payments: [], subscriptions: [], conversionStatus: 'not_started' },
-    intents: new Map(),
+    intent: null,
     checks: new Map(),
     grants: new Map(),
   };
